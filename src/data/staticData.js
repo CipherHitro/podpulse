@@ -6,6 +6,8 @@ export const PODS = [
     status: 'warning',
     cpu: 78,
     memory: 62,
+    cpuBaseline: 52,
+    memBaseline: 52,
     restarts: 0,
     node: 'minikube-node-1',
     age: '3d',
@@ -17,6 +19,8 @@ export const PODS = [
     status: 'critical',
     cpu: 45,
     memory: 89,
+    cpuBaseline: 24,
+    memBaseline: 43,
     restarts: 3,
     node: 'minikube-node-1',
     age: '3d',
@@ -28,6 +32,8 @@ export const PODS = [
     status: 'critical',
     cpu: 34,
     memory: 91,
+    cpuBaseline: 22,
+    memBaseline: 44,
     restarts: 2,
     node: 'minikube-node-1',
     age: '3d',
@@ -39,6 +45,8 @@ export const PODS = [
     status: 'healthy',
     cpu: 23,
     memory: 41,
+    cpuBaseline: 23,
+    memBaseline: 41,
     restarts: 0,
     node: 'minikube-node-1',
     age: '3d',
@@ -50,6 +58,8 @@ export const PODS = [
     status: 'healthy',
     cpu: 56,
     memory: 58,
+    cpuBaseline: 56,
+    memBaseline: 58,
     restarts: 0,
     node: 'minikube-node-1',
     age: '3d',
@@ -61,6 +71,8 @@ export const PODS = [
     status: 'warning',
     cpu: 67,
     memory: 55,
+    cpuBaseline: 39,
+    memBaseline: 48,
     restarts: 1,
     node: 'minikube-node-1',
     age: '3d',
@@ -72,6 +84,8 @@ export const PODS = [
     status: 'healthy',
     cpu: 18,
     memory: 72,
+    cpuBaseline: 18,
+    memBaseline: 72,
     restarts: 0,
     node: 'minikube-node-1',
     age: '3d',
@@ -83,6 +97,8 @@ export const PODS = [
     status: 'healthy',
     cpu: 12,
     memory: 34,
+    cpuBaseline: 12,
+    memBaseline: 34,
     restarts: 0,
     node: 'minikube-node-1',
     age: '3d',
@@ -221,6 +237,13 @@ export const AI_INSIGHTS = [
     confidence: 91,
   },
 ]
+
+export function hasIndependentIssue(podId, insights = AI_INSIGHTS) {
+  return insights.some(
+    (insight) =>
+      insight.rootCause === podId && insight.severity === 'critical' && !insight.resolved,
+  )
+}
 
 export const DEPENDENCY_GRAPH = {
   nodes: [

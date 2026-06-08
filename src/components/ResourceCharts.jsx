@@ -59,12 +59,30 @@ function baseAxes(unit = '%') {
 }
 
 export default function ResourceCharts({
+  pods,
   memoryData,
   cpuData,
   pvcData,
   networkData,
   animationKey,
 }) {
+  const podById = new Map(pods.map((pod) => [pod.id, pod]))
+  const statusForPods = (ids, fallback = 'healthy') => {
+    const statuses = ids.map((id) => podById.get(id)?.status).filter(Boolean)
+    if (statuses.includes('critical')) return 'critical'
+    if (statuses.includes('warning')) return 'warning'
+    if (statuses.includes('healthy')) return 'healthy'
+    return fallback
+  }
+  const memoryStatus = statusForPods([
+    'auth-service-5b2c',
+    'library-service-8a1e',
+    'student-portal-7d9f',
+  ])
+  const cpuStatus = statusForPods(['student-portal-7d9f', 'auth-service-5b2c', 'api-gateway-2f8a'])
+  const pvcStatus = statusForPods(['library-service-8a1e'])
+  const networkStatus = statusForPods(['api-gateway-2f8a', 'student-portal-7d9f'], 'info')
+
   const pvcSegmentData = pvcData.map((point) => ({
     ...point,
     latencyNormal: point.latency <= 1 ? point.latency : null,
@@ -73,7 +91,7 @@ export default function ResourceCharts({
 
   return (
     <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-      <ChartShell title="Memory Usage Over Time" subtitle="Auth, library, student portal" status="critical">
+      <ChartShell title="Memory Usage Over Time" subtitle="Auth, library, student portal" status={memoryStatus}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={memoryData} key={`memory-${animationKey}`}>
             {baseAxes('%')}
@@ -112,7 +130,7 @@ export default function ResourceCharts({
         </ResponsiveContainer>
       </ChartShell>
 
-      <ChartShell title="CPU Usage Over Time" subtitle="Login surge correlation" status="warning">
+      <ChartShell title="CPU Usage Over Time" subtitle="Login surge correlation" status={cpuStatus}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={cpuData} key={`cpu-${animationKey}`}>
             {baseAxes('%')}
@@ -151,7 +169,7 @@ export default function ResourceCharts({
         </ResponsiveContainer>
       </ChartShell>
 
-      <ChartShell title="PVC I/O Latency" subtitle="library-pvc read latency" status="critical">
+      <ChartShell title="PVC I/O Latency" subtitle="library-pvc read latency" status={pvcStatus}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pvcSegmentData} key={`pvc-${animationKey}`}>
             {baseAxes('s')}
@@ -182,7 +200,7 @@ export default function ResourceCharts({
         </ResponsiveContainer>
       </ChartShell>
 
-      <ChartShell title="Network Requests" subtitle="Cluster ingress volume" status="info">
+      <ChartShell title="Network Requests" subtitle="Cluster ingress volume" status={networkStatus}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={networkData} key={`network-${animationKey}`}>
             {baseAxes('')}

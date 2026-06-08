@@ -11,10 +11,12 @@ export default function AIInsightCard({
   onApplyFix,
 }) {
   const [copied, setCopied] = useState(false)
-  const meta = getStatusMeta(insight.severity)
+  const isResolved = Boolean(insight.resolved)
+  const displayStatus = isResolved ? 'healthy' : insight.severity
+  const meta = getStatusMeta(displayStatus)
   const rootPod = podsById.get(insight.rootCause)
   const isFixing = fixState === 'terminating'
-  const isFixed = fixState === 'running'
+  const isFixed = isResolved || fixState === 'running'
 
   async function copyCommand() {
     try {
@@ -32,17 +34,26 @@ export default function AIInsightCard({
       className={`insight-card rounded-lg border bg-[#1a1d27] p-4 shadow-xl shadow-black/10 transition ${
         isHighlighted
           ? `${meta.border} ${meta.glow}`
-          : 'border-white/10 hover:border-white/20'
+          : isResolved
+            ? 'border-[#00ff88]/20 hover:border-[#00ff88]/35'
+            : 'border-white/10 hover:border-white/20'
       }`}
+      style={{ borderLeft: isResolved ? '3px solid #00ff88' : undefined }}
     >
       <div className="mb-3 flex items-start justify-between gap-3">
-        <StatusBadge status={insight.severity} label={insight.severity} />
+        <StatusBadge
+          status={displayStatus}
+          label={isResolved ? 'resolved' : insight.severity}
+        />
         <span className="rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-xs text-slate-400">
           {insight.timeToOOM ? `OOM in ${insight.timeToOOM}` : `${insight.confidence}% confidence`}
         </span>
       </div>
 
-      <h3 className="text-base font-semibold leading-snug text-white">{insight.title}</h3>
+      <h3 className="flex items-start gap-2 text-base font-semibold leading-snug text-white">
+        {isResolved && <CheckCircle size={17} className="mt-0.5 shrink-0 text-[#00ff88]" />}
+        <span>{insight.title}</span>
+      </h3>
       <p className="mt-2 text-sm leading-relaxed text-slate-400">{insight.summary}</p>
 
       <div className="mt-4 rounded-md border border-white/[0.06] bg-white/[0.03] p-3">
@@ -108,7 +119,7 @@ export default function AIInsightCard({
           <span>Confidence</span>
           <span className={meta.text}>{insight.confidence}%</span>
         </div>
-        <MetricBar value={insight.confidence} status={insight.severity} />
+        <MetricBar value={insight.confidence} status={displayStatus} />
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3">

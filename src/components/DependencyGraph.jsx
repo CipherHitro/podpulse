@@ -48,14 +48,21 @@ const nodeTypes = {
   }),
 }
 
-export default function DependencyGraph({ pods, selectedPodId, pulsePodId, onSelectPod }) {
+export default function DependencyGraph({
+  pods,
+  selectedPodId,
+  pulsePodId,
+  criticalCount,
+  warningCount,
+  onSelectPod,
+}) {
   const podMap = useMemo(() => new Map(pods.map((pod) => [pod.id, pod])), [pods])
 
   const nodes = useMemo(
     () =>
       DEPENDENCY_GRAPH.nodes.map((node) => {
         const pod = podMap.get(node.id)
-        const status = pod?.phase === 'Terminating' ? 'warning' : pod?.status ?? node.status
+        const status = pod?.phase === 'Terminating' ? 'warning' : pod?.status ?? 'healthy'
 
         return {
           id: node.id,
@@ -112,7 +119,16 @@ export default function DependencyGraph({ pods, selectedPodId, pulsePodId, onSel
           <h2 className="text-sm font-semibold text-white">Dependency Graph</h2>
           <p className="text-xs text-slate-500">Service calls and inferred blast radius</p>
         </div>
-        <StatusBadge status="critical" label="2 critical" />
+        <StatusBadge
+          status={criticalCount > 0 ? 'critical' : warningCount > 0 ? 'warning' : 'healthy'}
+          label={
+            criticalCount > 0
+              ? `${criticalCount} critical`
+              : warningCount > 0
+                ? `${warningCount} warning`
+                : 'healthy'
+          }
+        />
       </div>
       <div className="h-[430px]">
         <ReactFlow
