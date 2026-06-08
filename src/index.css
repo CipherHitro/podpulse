@@ -4,14 +4,72 @@
   color-scheme: dark;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #0f1117;
+
+  /* Backgrounds */
+  --color-oasis-deep: #0a0a0a;
+  --color-oasis-surface: #111111;
+  --color-oasis-card: rgba(255, 255, 255, 0.05);
+  --color-oasis-card-hover: rgba(255, 255, 255, 0.08);
+  --color-oasis-card-active: rgba(255, 255, 255, 0.12);
+
+  /* Primary Accent */
+  --color-oasis-forest: #A8C465;
+  --color-oasis-forest-hover: #96B353;
+  --color-oasis-forest-dim: rgba(168, 196, 101, 0.15);
+  --color-oasis-forest-subtle: rgba(168, 196, 101, 0.08);
+
+  /* Secondary */
+  --color-oasis-minty: #dad7cd;
+  --color-oasis-minty-dim: rgba(218, 215, 205, 0.5);
+  --color-oasis-minty-subtle: rgba(218, 215, 205, 0.15);
+
+  /* Text */
+  --color-oasis-text-light: #FFFFFF;
+  --color-oasis-text-primary: #dad7cd;
+  --color-oasis-text-secondary: #888888;
+  --color-oasis-muted: #555555;
+
+  /* Borders */
+  --color-oasis-border: rgba(168, 196, 101, 0.15);
+  --color-oasis-border-strong: rgba(168, 196, 101, 0.3);
+  --color-oasis-border-subtle: rgba(168, 196, 101, 0.06);
+
+  /* Glow */
+  --color-oasis-glow: rgba(168, 196, 101, 0.12);
+  --color-oasis-glow-strong: rgba(168, 196, 101, 0.2);
+
+  /* Status Colors */
+  --color-critical: #DC2626;
+  --color-critical-bg: rgba(220, 38, 38, 0.12);
+  --color-critical-border: rgba(220, 38, 38, 0.35);
+  --color-critical-glow: rgba(220, 38, 38, 0.2);
+  --color-warning: #D97706;
+  --color-warning-bg: rgba(217, 119, 6, 0.12);
+  --color-warning-border: rgba(217, 119, 6, 0.35);
+  --color-warning-glow: rgba(217, 119, 6, 0.2);
+  --color-healthy: #22c55e;
+  --color-healthy-bg: rgba(22, 163, 74, 0.15);
+  --color-healthy-border: rgba(34, 197, 94, 0.35);
+
+  /* Info */
+  --color-info: #7A9E97;
+  --color-info-bg: rgba(122, 158, 151, 0.12);
+  --color-info-border: rgba(122, 158, 151, 0.35);
+
+  /* Resolved */
+  --color-resolved: #A8C465;
+  --color-resolved-bg: rgba(168, 196, 101, 0.1);
+  --color-resolved-border: rgba(168, 196, 101, 0.3);
+
+  background: var(--color-oasis-deep);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: #0f1117;
+  background: var(--color-oasis-deep);
+  color: var(--color-oasis-text-primary);
 }
 
 button,
@@ -31,5 +89,5 @@ button:disabled {
 
 ::selection {
   color: #ffffff;
-  background: rgba(68, 136, 255, 0.4);
+  background: rgba(168, 196, 101, 0.4);
 }

@@ -10,9 +10,17 @@ import { DEPENDENCY_GRAPH } from '../data/staticData'
 import { StatusBadge } from './status'
 import { getStatusMeta } from './statusMeta'
 
+// Graph-specific node colors — separate from badge/status colors
+const GRAPH_NODE_META = {
+  healthy: { fill: '#16a34a', border: '#22c55e', glow: 'rgba(34, 197, 94, 0.3)' },
+  warning: { fill: '#d97706', border: '#f59e0b', glow: 'rgba(245, 158, 11, 0.3)' },
+  critical: { fill: '#dc2626', border: '#ef4444', glow: 'rgba(239, 68, 68, 0.3)' },
+}
+
 const nodeTypes = {
   service: memo(function ServiceNode({ data }) {
     const meta = getStatusMeta(data.status)
+    const gn = GRAPH_NODE_META[data.status] || GRAPH_NODE_META.healthy
 
     return (
       <div className="relative flex w-[112px] flex-col items-center">
@@ -22,17 +30,18 @@ const nodeTypes = {
           className="!h-2 !w-2 !border-0 !bg-white/30"
         />
         <div
-          className={`grid h-16 w-16 place-items-center rounded-full border text-center transition ${
-            data.isSelected ? `scale-105 ${meta.border} ${meta.glow}` : 'border-white/15'
+          className={`grid h-16 w-16 place-items-center rounded-full text-center transition ${
+            data.isSelected ? 'scale-105' : ''
           } ${data.isPulsing ? 'pulse-critical' : ''}`}
           style={{
-            background: `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.22), ${meta.line} 72%)`,
-            boxShadow: data.isSelected ? undefined : `0 0 20px ${meta.line}35`,
+            background: `radial-gradient(circle at 32% 28%, rgba(255,255,255,0.22), ${gn.fill} 72%)`,
+            border: data.isSelected ? `3px solid ${gn.border}` : `2px solid ${gn.border}`,
+            boxShadow: `0 0 ${data.isSelected ? '20' : '12'}px ${gn.glow}`,
           }}
         >
           <span className="h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_18px_rgba(255,255,255,0.55)]" />
         </div>
-        <div className="mt-2 max-w-[120px] text-center text-xs font-semibold leading-tight text-slate-100">
+        <div className="mt-2 max-w-[120px] text-center text-xs font-semibold leading-tight text-[#dad7cd]">
           {data.label}
         </div>
         <div className="mt-1">
@@ -94,18 +103,18 @@ export default function DependencyGraph({
           type: 'smoothstep',
           markerEnd: {
             type: MarkerType.ArrowClosed,
-            color: isSelectedPath ? '#ffaa00' : '#4488ff',
+            color: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.4)',
           },
           labelStyle: {
-            fill: isSelectedPath ? '#ffd27a' : '#8fb2ff',
+            fill: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.5)',
             fontSize: 11,
             fontWeight: 700,
           },
-          labelBgStyle: { fill: '#111522', fillOpacity: 0.92 },
+          labelBgStyle: { fill: '#0a0a0a', fillOpacity: 0.92 },
           style: {
-            stroke: isSelectedPath ? '#ffaa00' : '#4488ff',
+            stroke: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.2)',
             strokeWidth: isSelectedPath ? 2.2 : 1.4,
-            strokeDasharray: '8 6',
+            strokeDasharray: '5 3',
           },
         }
       }),
@@ -113,11 +122,11 @@ export default function DependencyGraph({
   )
 
   return (
-    <section className="min-h-[390px] overflow-hidden rounded-lg border border-white/10 bg-[#1a1d27] shadow-xl shadow-black/10">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+    <section className="min-h-[390px] overflow-hidden rounded-xl border border-[rgba(168,196,101,0.2)] bg-[#111111]">
+      <div className="flex items-center justify-between border-b border-[rgba(168,196,101,0.2)] px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-white">Dependency Graph</h2>
-          <p className="text-xs text-slate-500">Service calls and inferred blast radius</p>
+          <p className="text-xs text-[#555555]">Service calls and inferred blast radius</p>
         </div>
         <StatusBadge
           status={criticalCount > 0 ? 'critical' : warningCount > 0 ? 'warning' : 'healthy'}
@@ -144,7 +153,7 @@ export default function DependencyGraph({
           nodesConnectable={false}
           proOptions={{ hideAttribution: true }}
         >
-          <Background color="#293246" gap={22} size={1} />
+          <Background color="rgba(255,255,255,0.05)" gap={22} size={1} />
           <Controls position="bottom-right" showInteractive={false} />
         </ReactFlow>
       </div>

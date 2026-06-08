@@ -153,12 +153,16 @@ function HeaderBadgeGroup({ criticalCount, warningCount }) {
   const allNominal = criticalCount === 0 && warningCount === 0
 
   return (
-    <div className="mr-1 hidden items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-slate-300 md:flex">
+    <div className="mr-1 hidden items-center gap-2 rounded-md border border-[rgba(168,196,101,0.2)] bg-[rgba(255,255,255,0.05)] px-3 py-2 text-sm text-[#dad7cd] md:flex">
       <StatusDot status={allNominal ? 'healthy' : 'critical'} />
-      <span className={allNominal ? 'text-[#00ff88]' : undefined}>{criticalCount} critical</span>
-      <span className="text-slate-600">/</span>
+      <span className={`${allNominal ? 'text-[#A8C465]' : ''}`}>
+        <span className="inline-flex items-center gap-1 rounded-md border border-[rgba(220,38,38,0.35)] bg-[rgba(220,38,38,0.12)] px-1.5 py-0.5 text-xs text-[#DC2626]">{criticalCount} critical</span>
+      </span>
+      <span className="text-[#555555]">/</span>
       <StatusDot status={allNominal ? 'healthy' : 'warning'} />
-      <span className={allNominal ? 'text-[#00ff88]' : undefined}>{warningCount} warning</span>
+      <span className={`${allNominal ? 'text-[#A8C465]' : ''}`}>
+        <span className="inline-flex items-center gap-1 rounded-md border border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] px-1.5 py-0.5 text-xs text-[#D97706]">{warningCount} warning</span>
+      </span>
     </div>
   )
 }
@@ -176,24 +180,24 @@ function InjectFailureMenu({ onInjectMemory, onInjectPvc }) {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex items-center gap-2 rounded-md border border-[#ffaa00]/35 bg-[#ffaa00]/10 px-3 py-2 text-sm font-semibold text-[#ffd27a] transition hover:border-[#ffaa00]/70 hover:bg-[#ffaa00]/15"
+        className="inline-flex items-center gap-2 rounded-md border border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] px-3 py-2 text-sm font-semibold text-[#D97706] transition hover:bg-[#D97706] hover:text-black hover:shadow-[0_0_12px_rgba(217,119,6,0.2)]"
       >
         Inject Failure
         <ChevronDown size={15} />
       </button>
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-lg border border-white/10 bg-[#1a1d27] shadow-2xl shadow-black/40">
+        <div className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-lg border border-[rgba(168,196,101,0.4)] bg-[#111111] shadow-[0_8px_24px_rgba(0,0,0,0.5),0_0_16px_rgba(168,196,101,0.15)]">
           <button
             type="button"
             onClick={() => selectFailure(onInjectMemory)}
-            className="block w-full px-3 py-2.5 text-left text-sm text-slate-200 transition hover:bg-[#ff4444]/10 hover:text-white"
+            className="block w-full px-3.5 py-2.5 text-left text-sm text-[#dad7cd] transition hover:bg-[rgba(255,255,255,0.08)] hover:text-white hover:border-l-2 hover:border-l-[#DC2626]"
           >
             Memory Leak — Auth Service
           </button>
           <button
             type="button"
             onClick={() => selectFailure(onInjectPvc)}
-            className="block w-full border-t border-white/[0.06] px-3 py-2.5 text-left text-sm text-slate-200 transition hover:bg-[#ffaa00]/10 hover:text-white"
+            className="block w-full border-t border-[rgba(168,196,101,0.08)] px-3.5 py-2.5 text-left text-sm text-[#dad7cd] transition hover:bg-[rgba(255,255,255,0.08)] hover:text-white hover:border-l-2 hover:border-l-[#D97706]"
           >
             PVC Bottleneck — Library Service
           </button>
@@ -216,10 +220,10 @@ function ClusterHeader({
   const clusterStatus = activeAnomalies > 0 ? 'critical' : 'healthy'
 
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0f1117]/95 px-4 py-3 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-[rgba(168,196,101,0.2)] bg-[#111111]/95 px-4 py-3 backdrop-blur" style={{boxShadow:'0 1px 0 rgba(168,196,101,0.08)'}}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-lg border border-[#4488ff]/30 bg-[#4488ff]/10 text-[#8fb2ff] shadow-[0_0_28px_rgba(68,136,255,0.18)]">
+          <div className="grid h-10 w-10 place-items-center rounded-lg border border-[rgba(168,196,101,0.2)] bg-[rgba(168,196,101,0.2)] text-[#A8C465]">
             <Shield size={21} />
           </div>
           <div>
@@ -230,7 +234,7 @@ function ClusterHeader({
                 label={activeAnomalies > 0 ? 'cluster degraded' : 'cluster nominal'}
               />
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#555555]">
               AI-powered Kubernetes observability for campus services
             </p>
           </div>
@@ -238,16 +242,16 @@ function ClusterHeader({
 
         <div className="flex flex-wrap items-center gap-2">
           <HeaderBadgeGroup criticalCount={criticalCount} warningCount={warningCount} />
-          <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-slate-300">
-            <Clock size={15} className="text-[#4488ff]" />
-            <span className="font-mono text-slate-100">{clockText}</span>
-            <span className="text-xs text-slate-500">Last scan: {lastScanAge}s ago</span>
+          <div className="flex items-center gap-2 rounded-md border border-[rgba(168,196,101,0.2)] bg-[rgba(168,196,101,0.08)] px-2.5 py-1 text-sm">
+            <Clock size={15} className="text-[#A8C465]" />
+            <span className="font-mono text-[#A8C465]">{clockText}</span>
+            <span className="text-xs text-[#A8C465]">Last scan: {lastScanAge}s ago</span>
           </div>
           <InjectFailureMenu onInjectMemory={onInjectMemory} onInjectPvc={onInjectPvc} />
           <button
             type="button"
             onClick={onReset}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/[0.04] text-slate-300 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[rgba(168,196,101,0.2)] bg-[rgba(255,255,255,0.05)] text-[#555555] transition hover:text-[#A8C465] hover:border-[rgba(168,196,101,0.4)]"
             title="Reset demo"
             aria-label="Reset demo"
           >
@@ -279,11 +283,11 @@ function SignalStrip({ clusterCpu, clusterMemory, healthyCount, restartCount }) 
         return (
           <div
             key={item.label}
-            className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-[#1a1d27] px-4 py-3"
+            className="flex items-center justify-between gap-3 rounded-[10px] border border-[rgba(168,196,101,0.2)] bg-[rgba(255,255,255,0.05)] px-4 py-3 transition duration-200 hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(168,196,101,0.4)]"
           >
             <div>
-              <div className="text-xs uppercase tracking-[0.08em] text-slate-500">{item.label}</div>
-              <div className="mt-1 text-lg font-semibold text-white">{item.value}</div>
+              <div className="text-xs uppercase tracking-[0.08em] text-[#555555]">{item.label}</div>
+              <div className="mt-1 text-lg font-bold text-white">{item.value}</div>
             </div>
             <span className={`grid h-9 w-9 place-items-center rounded-md ${meta.bg} ${meta.text}`}>
               <Icon size={18} />
@@ -320,7 +324,7 @@ function RightPanel({
       <div className="flex items-center justify-between px-1">
         <div>
           <h2 className="text-sm font-semibold text-white">AI Insights</h2>
-          <p className="text-xs text-slate-500">Root cause cards and commands</p>
+          <p className="text-xs text-[#555555]">Root cause cards and commands</p>
         </div>
         <StatusBadge
           status={activeAnomalies > 0 ? 'critical' : 'healthy'}
@@ -656,7 +660,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f1117] text-slate-100">
+    <div className="min-h-screen bg-[#0a0a0a] text-[#dad7cd]">
       <ClusterHeader
         criticalCount={criticalCount}
         warningCount={warningCount}
@@ -719,7 +723,7 @@ export default function App() {
         />
       </main>
 
-      <footer className="border-t border-white/10 px-4 py-4 text-center text-xs text-slate-600">
+      <footer className="border-t border-[rgba(168,196,101,0.2)] bg-[#111111] px-4 py-4 text-center text-xs font-mono text-[#555555]">
         Demo Cluster: smart-campus • v1.28.4 • minikube-node-1
       </footer>
 
