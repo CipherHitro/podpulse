@@ -1,0 +1,117 @@
+.react-flow {
+  background:
+    linear-gradient(rgba(68, 136, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(68, 136, 255, 0.04) 1px, transparent 1px),
+    #141824;
+  background-size: 32px 32px;
+}
+
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__edge-path {
+  filter: drop-shadow(0 0 5px rgba(68, 136, 255, 0.3));
+}
+
+.react-flow__controls {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(15, 17, 23, 0.86);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.react-flow__controls-button {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(68, 136, 255, 0.14);
+}
+
+.react-flow__controls-button svg {
+  fill: #cbd5e1;
+}
+
+.pulse-critical {
+  animation: pulse-critical 1.05s ease-in-out infinite;
+}
+
+.timeline-ping::after {
+  position: absolute;
+  inset: -8px;
+  content: '';
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.4;
+  animation: timeline-ping 1.4s ease-out infinite;
+}
+
+.insight-card {
+  animation: insight-enter 320ms ease-out both;
+}
+
+* {
+  scrollbar-color: rgba(148, 163, 184, 0.36) rgba(255, 255, 255, 0.04);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.36);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+@keyframes pulse-critical {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 18px rgba(255, 68, 68, 0.3);
+  }
+
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 34px rgba(255, 68, 68, 0.75);
+  }
+}
+
+@keyframes timeline-ping {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+@keyframes insight-enter {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
