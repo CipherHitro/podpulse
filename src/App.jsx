@@ -700,14 +700,7 @@ export default function App() {
       />
 
       <main className="w-full space-y-4 p-4">
-        <SignalStrip
-          clusterCpu={clusterCpu}
-          clusterMemory={clusterMemory}
-          healthyCount={healthyCount}
-          restartCount={restartCount}
-        />
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr_320px] lg:h-[640px] items-stretch">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr_320px] lg:h-[750px] items-stretch">
           <aside className="flex flex-col gap-3 h-full min-h-0">
             <KPICards pods={pods} />
             <div className="flex-1 min-h-0">
@@ -724,15 +717,23 @@ export default function App() {
             </div>
           </aside>
 
-          <div className="h-full min-h-0">
-            <DependencyGraph
-              pods={pods}
-              selectedPodId={selectedPodId}
-              pulsePodId={pulsePodId}
-              criticalCount={criticalCount}
-              warningCount={warningCount}
-              onSelectPod={handleSelectPod}
+          <div className="flex flex-col gap-3 h-full min-h-0">
+            <SignalStrip
+              clusterCpu={clusterCpu}
+              clusterMemory={clusterMemory}
+              healthyCount={healthyCount}
+              restartCount={restartCount}
             />
+            <div className="flex-grow min-h-0">
+              <DependencyGraph
+                pods={pods}
+                selectedPodId={selectedPodId}
+                pulsePodId={pulsePodId}
+                criticalCount={criticalCount}
+                warningCount={warningCount}
+                onSelectPod={handleSelectPod}
+              />
+            </div>
           </div>
 
           <div className="h-full min-h-0">
