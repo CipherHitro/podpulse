@@ -122,7 +122,7 @@ export default function DependencyGraph({
   )
 
   return (
-    <section className="min-h-[390px] overflow-hidden rounded-xl border border-[rgba(168,196,101,0.2)] bg-[#111111]">
+    <section className="h-full flex flex-col overflow-hidden rounded-xl border border-[rgba(168,196,101,0.2)] bg-[#111111]">
       <div className="flex items-center justify-between border-b border-[rgba(168,196,101,0.2)] px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-white">Dependency Graph</h2>
@@ -139,7 +139,7 @@ export default function DependencyGraph({
           }
         />
       </div>
-      <div className="h-[430px]">
+      <div className="flex-1 min-h-0">
         <ReactFlow
           nodes={nodes}
           edges={edges}

@@ -12,7 +12,7 @@ export default function PodGrid({ pods, selectedPodId, onPodClick, onOpenModal }
   )
 
   return (
-    <section className="rounded-lg border border-[rgba(168,196,101,0.2)] bg-[#111111] p-4">
+    <section className="rounded-lg border border-[rgba(168,196,101,0.2)] bg-[#111111] p-4 h-full flex flex-col">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-white">Pods</h2>
@@ -46,7 +46,7 @@ export default function PodGrid({ pods, selectedPodId, onPodClick, onOpenModal }
         })}
       </div>
 
-      <div className="grid max-h-[420px] grid-cols-2 gap-2 overflow-y-auto pr-1">
+      <div className="grid flex-1 min-h-0 grid-cols-2 gap-2 overflow-y-auto pr-1">
         {visiblePods.map((pod) => {
           const meta = getStatusMeta(pod.status)
           const selected = pod.id === selectedPodId

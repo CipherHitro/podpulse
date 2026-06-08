@@ -49,18 +49,6 @@ const QUIET_NETWORK_TIMELINE = NETWORK_TIMELINE.map((point, index) => ({
 
 const INITIAL_LOG_SEED = [
   {
-    offsetSeconds: 0,
-    severity: 'critical',
-    description:
-      'Memory Agent: heap growth 12.3 MB/min in auth-service - OOM predicted in 18 min (confidence: 94%)',
-  },
-  {
-    offsetSeconds: 17,
-    severity: 'critical',
-    description:
-      'Storage Agent: PVC read latency 5.1s in library-service - threshold: 1.0s (confidence: 87%)',
-  },
-  {
     offsetSeconds: 102,
     severity: 'warning',
     description:
@@ -69,7 +57,7 @@ const INITIAL_LOG_SEED = [
   {
     offsetSeconds: 182,
     severity: 'info',
-    description: 'Master Agent: 47 raw alerts correlated into 3 incidents',
+    description: 'Master Agent: 0 raw alerts correlated',
   },
   {
     offsetSeconds: 252,
@@ -145,7 +133,7 @@ function canAutoRecover(podId, insightsAfterFix) {
 
 function resetInsightState(insights, insightId) {
   return insights.map((insight) =>
-    insight.id === insightId ? { ...insight, resolved: false } : insight,
+    insight.id === insightId ? { ...insight, active: true, resolved: false } : insight,
   )
 }
 
@@ -155,13 +143,21 @@ function HeaderBadgeGroup({ criticalCount, warningCount }) {
   return (
     <div className="mr-1 hidden items-center gap-2 rounded-md border border-[rgba(168,196,101,0.2)] bg-[rgba(255,255,255,0.05)] px-3 py-2 text-sm text-[#dad7cd] md:flex">
       <StatusDot status={allNominal ? 'healthy' : 'critical'} />
-      <span className={`${allNominal ? 'text-[#A8C465]' : ''}`}>
-        <span className="inline-flex items-center gap-1 rounded-md border border-[rgba(220,38,38,0.35)] bg-[rgba(220,38,38,0.12)] px-1.5 py-0.5 text-xs text-[#DC2626]">{criticalCount} critical</span>
+      <span>
+        <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs border ${
+          allNominal 
+            ? 'border-[rgba(34,197,94,0.35)] bg-[rgba(22,163,74,0.15)] text-[#22c55e]' 
+            : 'border-[rgba(220,38,38,0.35)] bg-[rgba(220,38,38,0.12)] text-[#DC2626]'
+        }`}>{criticalCount} critical</span>
       </span>
       <span className="text-[#555555]">/</span>
       <StatusDot status={allNominal ? 'healthy' : 'warning'} />
-      <span className={`${allNominal ? 'text-[#A8C465]' : ''}`}>
-        <span className="inline-flex items-center gap-1 rounded-md border border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] px-1.5 py-0.5 text-xs text-[#D97706]">{warningCount} warning</span>
+      <span>
+        <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs border ${
+          allNominal 
+            ? 'border-[rgba(34,197,94,0.35)] bg-[rgba(22,163,74,0.15)] text-[#22c55e]' 
+            : 'border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] text-[#D97706]'
+        }`}>{warningCount} warning</span>
       </span>
     </div>
   )
@@ -180,7 +176,7 @@ function InjectFailureMenu({ onInjectMemory, onInjectPvc }) {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex items-center gap-2 rounded-md border border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] px-3 py-2 text-sm font-semibold text-[#D97706] transition hover:bg-[#D97706] hover:text-black hover:shadow-[0_0_12px_rgba(217,119,6,0.2)]"
+        className="inline-flex items-center gap-2 rounded-md border border-[rgba(217,119,6,0.35)] bg-[rgba(217,119,6,0.12)] px-3 py-2 text-sm font-semibold text-[#D97706] transition hover:bg-[#D97706] hover:text-black pulse-inject"
       >
         Inject Failure
         <ChevronDown size={15} />
@@ -228,7 +224,7 @@ function ClusterHeader({
           </div>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg font-semibold text-white">CampusGuardian</h1>
+              <h1 className="text-lg font-semibold text-white">PodPulse</h1>
               <StatusBadge
                 status={clusterStatus}
                 label={activeAnomalies > 0 ? 'cluster degraded' : 'cluster nominal'}
@@ -308,58 +304,81 @@ function RightPanel({
   onApplyFix,
 }) {
   useEffect(() => {
-    document
-      .getElementById(`insight-${spotlightInsightId}`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    if (spotlightInsightId !== null) {
+      document
+        .getElementById(`insight-${spotlightInsightId}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
   }, [spotlightInsightId])
 
   const orderedInsights = useMemo(() => {
-    const spotlight = insights.find((insight) => insight.id === spotlightInsightId)
-    const rest = insights.filter((insight) => insight.id !== spotlightInsightId)
-    return spotlight ? [spotlight, ...rest] : insights
+    const active = insights.filter((insight) => insight.active)
+    if (spotlightInsightId === null) return active
+    const spotlight = active.find((insight) => insight.id === spotlightInsightId)
+    const rest = active.filter((insight) => insight.id !== spotlightInsightId)
+    return spotlight ? [spotlight, ...rest] : active
   }, [insights, spotlightInsightId])
 
+  const activeCount = useMemo(() => {
+    return insights.filter((insight) => insight.active && !insight.resolved).length
+  }, [insights])
+
   return (
-    <aside className="min-h-0 space-y-3">
-      <div className="flex items-center justify-between px-1">
+    <aside className="rounded-lg border border-[rgba(168,196,101,0.2)] bg-[#111111] p-4 h-full flex flex-col">
+      <div className="mb-3 flex items-center justify-between pb-3 border-b border-[rgba(168,196,101,0.08)]">
         <div>
           <h2 className="text-sm font-semibold text-white">AI Insights</h2>
           <p className="text-xs text-[#555555]">Root cause cards and commands</p>
         </div>
         <StatusBadge
-          status={activeAnomalies > 0 ? 'critical' : 'healthy'}
-          label={`${activeAnomalies} active`}
+          status={activeCount > 0 ? 'critical' : 'healthy'}
+          label={`${activeCount} active`}
         />
       </div>
-      <div className="max-h-[calc(100vh-224px)] space-y-3 overflow-y-auto pr-1 lg:max-h-[calc(100vh-154px)]">
-        {orderedInsights.map((insight) => (
-          <AIInsightCard
-            key={insight.id}
-            insight={insight}
-            podsById={podsById}
-            isHighlighted={insight.id === spotlightInsightId}
-            fixState={fixStates[insight.id]}
-            onApplyFix={onApplyFix}
-          />
-        ))}
+      <div className="flex-1 min-h-0 space-y-3 overflow-y-auto pr-1">
+        {orderedInsights.length === 0 ? (
+          <div className="rounded-[10px] border border-[rgba(168,196,101,0.15)] bg-[rgba(255,255,255,0.05)] p-4 text-center text-xs text-[#555555]">
+            No active anomalies or insights detected. Use "Inject Failure" to simulate an incident.
+          </div>
+        ) : (
+          orderedInsights.map((insight) => (
+            <AIInsightCard
+              key={insight.id}
+              insight={insight}
+              podsById={podsById}
+              isHighlighted={insight.id === spotlightInsightId}
+              fixState={fixStates[insight.id]}
+              onApplyFix={onApplyFix}
+            />
+          ))
+        )}
       </div>
     </aside>
   )
 }
 
 export default function App() {
-  const [pods, setPods] = useState(() => PODS.map((pod) => ({ ...pod })))
-  const [insights, setInsights] = useState(() =>
-    AI_INSIGHTS.map((insight) => ({ ...insight, resolved: false })),
+  const [pods, setPods] = useState(() =>
+    PODS.map((pod) => ({
+      ...pod,
+      status: 'healthy',
+      cpu: pod.cpuBaseline,
+      memory: pod.memBaseline,
+      restarts: 0,
+      phase: 'Running',
+    })),
   )
-  const [selectedPodId, setSelectedPodId] = useState('auth-service-5b2c')
-  const [spotlightInsightId, setSpotlightInsightId] = useState(1)
-  const [pulsePodId, setPulsePodId] = useState('auth-service-5b2c')
+  const [insights, setInsights] = useState(() =>
+    AI_INSIGHTS.map((insight) => ({ ...insight, active: false, resolved: false })),
+  )
+  const [selectedPodId, setSelectedPodId] = useState(null)
+  const [spotlightInsightId, setSpotlightInsightId] = useState(null)
+  const [pulsePodId, setPulsePodId] = useState(null)
   const [animationKey, setAnimationKey] = useState(0)
-  const [memoryData, setMemoryData] = useState(MEMORY_TIMELINE)
-  const [cpuData, setCpuData] = useState(CPU_TIMELINE)
-  const [pvcData, setPvcData] = useState(PVC_TIMELINE)
-  const [networkData, setNetworkData] = useState(NETWORK_TIMELINE)
+  const [memoryData, setMemoryData] = useState(RECOVERED_MEMORY_TIMELINE)
+  const [cpuData, setCpuData] = useState(RECOVERED_CPU_TIMELINE)
+  const [pvcData, setPvcData] = useState(RECOVERED_PVC_TIMELINE)
+  const [networkData, setNetworkData] = useState(QUIET_NETWORK_TIMELINE)
   const [fixStates, setFixStates] = useState({})
   const [eventLog, setEventLog] = useState(createInitialEventLog)
   const [clockNow, setClockNow] = useState(() => new Date())
@@ -525,7 +544,7 @@ export default function App() {
     highlightPodAndInsight('auth-service-5b2c', insightId)
     addEventLog(
       'critical',
-      'Memory Agent: injected memory leak in auth-service - heap growth 12.3 MB/min (confidence: 94%)',
+      'Memory Agent: heap growth 12.3 MB/min in auth-service - OOM predicted in 18 min (confidence: 94%)',
     )
   }
 
@@ -554,7 +573,7 @@ export default function App() {
     highlightPodAndInsight('library-service-8a1e', insightId)
     addEventLog(
       'critical',
-      'Storage Agent: injected PVC bottleneck in library-service - read latency 5.1s (confidence: 87%)',
+      'Storage Agent: PVC read latency 5.1s in library-service - threshold: 1.0s (confidence: 87%)',
     )
   }
 
@@ -562,20 +581,28 @@ export default function App() {
     timersRef.current.forEach((timer) => window.clearTimeout(timer))
     timersRef.current = []
     scanCycleRef.current = 841
-    setPods(PODS.map((pod) => ({ ...pod })))
-    setInsights(AI_INSIGHTS.map((insight) => ({ ...insight, resolved: false })))
-    setSelectedPodId('auth-service-5b2c')
-    setSpotlightInsightId(1)
-    setPulsePodId('auth-service-5b2c')
-    setMemoryData(MEMORY_TIMELINE)
-    setCpuData(CPU_TIMELINE)
-    setPvcData(PVC_TIMELINE)
-    setNetworkData(NETWORK_TIMELINE)
+    setPods(
+      PODS.map((pod) => ({
+        ...pod,
+        status: 'healthy',
+        cpu: pod.cpuBaseline,
+        memory: pod.memBaseline,
+        restarts: 0,
+        phase: 'Running',
+      })),
+    )
+    setInsights(AI_INSIGHTS.map((insight) => ({ ...insight, active: false, resolved: false })))
+    setSelectedPodId(null)
+    setSpotlightInsightId(null)
+    setPulsePodId(null)
+    setMemoryData(RECOVERED_MEMORY_TIMELINE)
+    setCpuData(RECOVERED_CPU_TIMELINE)
+    setPvcData(RECOVERED_PVC_TIMELINE)
+    setNetworkData(QUIET_NETWORK_TIMELINE)
     setFixStates({})
     setEventLog(createInitialEventLog())
     setLastScanAge(0)
     setAnimationKey((key) => key + 1)
-    schedule(() => setPulsePodId(null), 1800)
   }
 
   function applyFix(insight) {
@@ -672,36 +699,55 @@ export default function App() {
         onReset={resetDemo}
       />
 
-      <main className="grid min-h-[calc(100vh-65px)] grid-cols-1 gap-3 p-3 lg:grid-cols-[250px_minmax(0,1fr)_320px]">
-        <aside className="min-h-0 space-y-3">
-          <KPICards pods={pods} />
-          <PodGrid 
-            pods={pods} 
-            selectedPodId={selectedPodId} 
-            onPodClick={handlePodGridClick} 
-            onOpenModal={() => {
-              setModalScrollPodId(null)
-              setModalHighlightPodId(null)
-              setIsPodModalOpen(true)
-            }}
-          />
-        </aside>
+      <main className="w-full space-y-4 p-4">
+        <SignalStrip
+          clusterCpu={clusterCpu}
+          clusterMemory={clusterMemory}
+          healthyCount={healthyCount}
+          restartCount={restartCount}
+        />
 
-        <section className="min-w-0 space-y-3">
-          <SignalStrip
-            clusterCpu={clusterCpu}
-            clusterMemory={clusterMemory}
-            healthyCount={healthyCount}
-            restartCount={restartCount}
-          />
-          <DependencyGraph
-            pods={pods}
-            selectedPodId={selectedPodId}
-            pulsePodId={pulsePodId}
-            criticalCount={criticalCount}
-            warningCount={warningCount}
-            onSelectPod={handleSelectPod}
-          />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr_320px] lg:h-[640px] items-stretch">
+          <aside className="flex flex-col gap-3 h-full min-h-0">
+            <KPICards pods={pods} />
+            <div className="flex-1 min-h-0">
+              <PodGrid 
+                pods={pods} 
+                selectedPodId={selectedPodId} 
+                onPodClick={handlePodGridClick} 
+                onOpenModal={() => {
+                  setModalScrollPodId(null)
+                  setModalHighlightPodId(null)
+                  setIsPodModalOpen(true)
+                }}
+              />
+            </div>
+          </aside>
+
+          <div className="h-full min-h-0">
+            <DependencyGraph
+              pods={pods}
+              selectedPodId={selectedPodId}
+              pulsePodId={pulsePodId}
+              criticalCount={criticalCount}
+              warningCount={warningCount}
+              onSelectPod={handleSelectPod}
+            />
+          </div>
+
+          <div className="h-full min-h-0">
+            <RightPanel
+              insights={insights}
+              podsById={podsById}
+              spotlightInsightId={spotlightInsightId}
+              activeAnomalies={activeAnomalies}
+              fixStates={fixStates}
+              onApplyFix={applyFix}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
           <ResourceCharts
             pods={pods}
             memoryData={memoryData}
@@ -711,16 +757,7 @@ export default function App() {
             animationKey={animationKey}
           />
           <LiveEventLog events={eventLog} onClear={() => setEventLog([])} />
-        </section>
-
-        <RightPanel
-          insights={insights}
-          podsById={podsById}
-          spotlightInsightId={spotlightInsightId}
-          activeAnomalies={activeAnomalies}
-          fixStates={fixStates}
-          onApplyFix={applyFix}
-        />
+        </div>
       </main>
 
       <footer className="border-t border-[rgba(168,196,101,0.2)] bg-[#111111] px-4 py-4 text-center text-xs font-mono text-[#555555]">
