@@ -3,12 +3,9 @@ import ReactFlow, {
   Background,
   Controls,
   Handle,
-  MarkerType,
   Position,
 } from 'reactflow'
-import { DEPENDENCY_GRAPH } from '../data/staticData'
 import { StatusBadge } from './status'
-import { getStatusMeta } from './statusMeta'
 
 // Graph-specific node colors — separate from badge/status colors
 const GRAPH_NODE_META = {
@@ -19,7 +16,6 @@ const GRAPH_NODE_META = {
 
 const nodeTypes = {
   service: memo(function ServiceNode({ data }) {
-    const meta = getStatusMeta(data.status)
     const gn = GRAPH_NODE_META[data.status] || GRAPH_NODE_META.healthy
 
     return (
@@ -65,68 +61,40 @@ export default function DependencyGraph({
   warningCount,
   onSelectPod,
 }) {
-  const podMap = useMemo(() => new Map(pods.map((pod) => [pod.id, pod])), [pods])
-
   const nodes = useMemo(
     () =>
-      DEPENDENCY_GRAPH.nodes.map((node) => {
-        const pod = podMap.get(node.id)
-        const status = pod?.phase === 'Terminating' ? 'warning' : pod?.status ?? 'healthy'
+      pods.map((pod, index) => {
+        const columns = Math.max(1, Math.ceil(Math.sqrt(pods.length || 1)))
+        const row = Math.floor(index / columns)
+        const column = index % columns
+        const status = pod.phase === 'Terminating' ? 'warning' : pod.status
+        const isSelected = pod.id === selectedPodId
+        const isPulsing = pod.id === pulsePodId
 
         return {
-          id: node.id,
+          id: pod.id,
           type: 'service',
-          position: { x: node.x, y: node.y },
+          position: { x: column * 180, y: row * 140 },
           data: {
-            label: node.label,
+            label: pod.name,
             status,
-            phase: pod?.phase,
-            isSelected: node.id === selectedPodId,
-            isPulsing: node.id === pulsePodId,
+            phase: pod.phase,
+            isSelected,
+            isPulsing,
           },
         }
       }),
-    [podMap, pulsePodId, selectedPodId],
+    [pods, pulsePodId, selectedPodId],
   )
 
-  const edges = useMemo(
-    () =>
-      DEPENDENCY_GRAPH.edges.map((edge, index) => {
-        const isSelectedPath = edge.source === selectedPodId || edge.target === selectedPodId
-
-        return {
-          id: `edge-${index}`,
-          source: edge.source,
-          target: edge.target,
-          label: edge.label,
-          animated: true,
-          type: 'smoothstep',
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            color: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.4)',
-          },
-          labelStyle: {
-            fill: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.5)',
-            fontSize: 11,
-            fontWeight: 700,
-          },
-          labelBgStyle: { fill: '#0a0a0a', fillOpacity: 0.92 },
-          style: {
-            stroke: isSelectedPath ? '#D97706' : 'rgba(255,255,255,0.2)',
-            strokeWidth: isSelectedPath ? 2.2 : 1.4,
-            strokeDasharray: '5 3',
-          },
-        }
-      }),
-    [selectedPodId],
-  )
+  const edges = useMemo(() => [], [])
 
   return (
     <section className="h-full flex flex-col overflow-hidden rounded-xl border border-[rgba(168,196,101,0.2)] bg-[#111111]">
       <div className="flex items-center justify-between border-b border-[rgba(168,196,101,0.2)] px-4 py-3">
         <div>
           <h2 className="text-sm font-semibold text-white">Dependency Graph</h2>
-          <p className="text-xs text-[#555555]">Service calls and inferred blast radius</p>
+          <p className="text-xs text-[#555555]">Pod nodes from Kubernetes API</p>
         </div>
         <StatusBadge
           status={criticalCount > 0 ? 'critical' : warningCount > 0 ? 'warning' : 'healthy'}
@@ -140,22 +108,28 @@ export default function DependencyGraph({
         />
       </div>
       <div className="flex-1 min-h-0">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodeClick={(_, node) => onSelectPod(node.id)}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          minZoom={0.65}
-          maxZoom={1.3}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background color="rgba(255,255,255,0.05)" gap={22} size={1} />
-          <Controls position="bottom-right" showInteractive={false} />
-        </ReactFlow>
+        {nodes.length === 0 ? (
+          <div className="grid h-full place-items-center text-xs text-[#555555]">
+            No pods returned by the backend.
+          </div>
+        ) : (
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodeClick={(_, node) => onSelectPod(node.id)}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            minZoom={0.65}
+            maxZoom={1.3}
+            nodesDraggable={false}
+            nodesConnectable={false}
+            proOptions={{ hideAttribution: true }}
+          >
+            <Background color="rgba(255,255,255,0.05)" gap={22} size={1} />
+            <Controls position="bottom-right" showInteractive={false} />
+          </ReactFlow>
+        )}
       </div>
     </section>
   )
