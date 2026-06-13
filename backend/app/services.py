@@ -8,6 +8,8 @@ from app.utils import parse_cpu, parse_memory, get_pod_status_and_phase
 from datetime import datetime, timezone
 from kubernetes import watch
 
+SYSTEM_NAMESPACES = {"kube-system", "kubernetes-dashboard"}
+
 _watch_lock = threading.Lock()
 _active_watch = None
 
@@ -50,9 +52,13 @@ def _sum_container_limits(pod, resource):
 
     return total if found_limit and total > 0 else None
 
-def get_pods_data():
+def get_pods_data(include_system: bool = False):
     try:
         pods_list = v1.list_pod_for_all_namespaces().items
+
+        # Filter out system namespaces unless include_system is True
+        if not include_system:
+            pods_list = [pod for pod in pods_list if pod.metadata.namespace not in SYSTEM_NAMESPACES]
         
         pod_metrics = {}
         try:
@@ -90,6 +96,8 @@ def get_pods_data():
             mem_mib = None
             cpu_percent = None
             mem_percent = None
+            cpu_limit = None
+            mem_limit = None
             metric_entry = pod_metrics.get((namespace, name))
             if metric_entry:
                 cpu_cores = _sum_container_usage(metric_entry, "cpu")
@@ -97,11 +105,18 @@ def get_pods_data():
 
                 cpu_limit = _sum_container_limits(pod, "cpu")
                 mem_limit = _sum_container_limits(pod, "memory")
-                if cpu_cores is not None and cpu_limit:
-                    cpu_percent = min(round((cpu_cores / cpu_limit) * 100.0), 100)
-                if mem_mib is not None and mem_limit:
-                    mem_percent = min(round((mem_mib / mem_limit) * 100.0), 100)
+                if cpu_cores is not None:
+                    if cpu_limit:
+                        cpu_percent = min(round((cpu_cores / cpu_limit) * 100.0), 100)
+                    else:
+                        cpu_percent = round(cpu_cores * 1000, 1)  # fallback: show millicores
+                if mem_mib is not None:
+                    if mem_limit:
+                        mem_percent = min(round((mem_mib / mem_limit) * 100.0), 100)
+                    else:
+                        mem_percent = round(mem_mib, 1)  # fallback: show MiB
                 
+            has_limits = cpu_limit is not None or mem_limit is not None
             result.append({
                 "id": name,
                 "name": name,
@@ -111,6 +126,7 @@ def get_pods_data():
                 "memory": mem_percent,
                 "cpuCores": cpu_cores,
                 "memoryMiB": mem_mib,
+                "hasLimits": has_limits,
                 "restarts": restarts,
                 "node": pod.spec.node_name,
                 "age": age_str,
@@ -193,7 +209,7 @@ async def watch_pod_events():
 async def update_metrics_loop():
     while True:
         try:
-            pods_data, _ = await asyncio.to_thread(get_pods_data)
+            pods_data, _ = await asyncio.to_thread(lambda: get_pods_data(include_system=False))
             now_str = datetime.now().strftime("%H:%M")
 
             new_point = {

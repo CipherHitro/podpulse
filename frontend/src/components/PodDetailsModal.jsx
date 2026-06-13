@@ -245,11 +245,11 @@ export default function PodDetailsModal({
                         </div>
                       </td>
                       <td className="px-4 py-2">
-                        <div className="font-bold text-white">{pod.cpu}%</div>
+                        <div className="font-bold text-white">{pod.cpu}{pod.hasLimits ? "%" : "m"}</div>
                         <ProgressBar value={pod.cpu} thresholds={{ amber: 60, red: 80 }} />
                       </td>
                       <td className="px-4 py-2">
-                        <div className="font-bold text-white">{pod.memory}%</div>
+                        <div className="font-bold text-white">{pod.memory}{pod.hasLimits ? "%" : "Mi"}</div>
                         <ProgressBar value={pod.memory} thresholds={{ amber: 70, red: 85 }} />
                       </td>
                       <td className="px-4 py-2 text-center">

@@ -5,8 +5,8 @@ from app.config import v1
 router = APIRouter(prefix="/api/pods", tags=["pods"])
 
 @router.get("")
-def list_pods():
-    pods_data, _ = get_pods_data()
+def list_pods(include_system: bool = False):
+    pods_data, _ = get_pods_data(include_system=include_system)
     return pods_data
 
 @router.post("/{namespace}/{name}/restart")

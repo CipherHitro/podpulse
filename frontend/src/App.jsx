@@ -54,6 +54,8 @@ function ClusterHeader({
   clockText,
   lastScanAge,
   onReset,
+  includeSystem,
+  onToggleSystem,
 }) {
   const clusterStatus = activeAnomalies > 0 ? 'critical' : 'healthy'
 
@@ -78,13 +80,26 @@ function ClusterHeader({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
           <HeaderBadgeGroup criticalCount={criticalCount} warningCount={warningCount} />
           <div className="flex items-center gap-2 rounded-md border border-[rgba(168,196,101,0.2)] bg-[rgba(168,196,101,0.08)] px-2.5 py-1 text-sm">
             <Clock size={15} className="text-[#A8C465]" />
             <span className="font-mono text-[#A8C465]">{clockText}</span>
             <span className="text-xs text-[#A8C465]">Last scan: {lastScanAge}s ago</span>
           </div>
+          <button
+            type="button"
+            onClick={onToggleSystem}
+            className={`inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              includeSystem
+                ? 'border-[rgba(168,196,101,0.4)] bg-[rgba(168,196,101,0.15)] text-[#A8C465]'
+                : 'border-[rgba(168,196,101,0.15)] bg-transparent text-[#555555] hover:text-[#A8C465] hover:border-[rgba(168,196,101,0.3)]'
+            }`}
+            title={includeSystem ? 'Showing all pods. Click to hide system pods.' : 'Showing user pods only. Click to show all pods.'}
+            aria-label="Toggle system pods visibility"
+          >
+            {includeSystem ? 'All Pods' : 'User Pods'}
+          </button>
           <button
             type="button"
             onClick={onReset}
@@ -216,6 +231,7 @@ export default function App() {
   const [eventLog, setEventLog] = useState([])
   const [clockNow, setClockNow] = useState(() => new Date())
   const [lastScanAge, setLastScanAge] = useState(0)
+  const [includeSystem, setIncludeSystem] = useState(false)
   
   const [isPodModalOpen, setIsPodModalOpen] = useState(false)
   const [modalScrollPodId, setModalScrollPodId] = useState(null)
@@ -226,7 +242,7 @@ export default function App() {
   const fetchData = useCallback(async () => {
     try {
       // 1. Fetch pods
-      const podsRes = await fetch('http://localhost:8000/api/pods')
+      const podsRes = await fetch(`http://localhost:8000/api/pods?include_system=${includeSystem}`)
       if (podsRes.ok) {
         const podsData = await podsRes.json()
         setPods(podsData)
@@ -261,7 +277,7 @@ export default function App() {
     } catch (err) {
       console.error('Error polling dashboard API:', err)
     }
-  }, [])
+  }, [includeSystem])
 
   useEffect(() => {
     const initialPulse = window.setTimeout(() => setPulsePodId(null), 1800)
@@ -367,6 +383,10 @@ export default function App() {
     handleSelectPod(podId)
   }
 
+  function toggleSystem() {
+    setIncludeSystem((prev) => !prev)
+  }
+
   function refreshData() {
     fetchData()
   }
@@ -420,6 +440,8 @@ export default function App() {
         clockText={clockText}
         lastScanAge={lastScanAge}
         onReset={refreshData}
+        includeSystem={includeSystem}
+        onToggleSystem={toggleSystem}
       />
 
       <main className="w-full space-y-4 p-4">
