@@ -1,10 +1,22 @@
+import asyncio
+import threading
+import time
+
 from app.config import v1, custom_api
 from app.state import EVENT_LOG, METRICS_HISTORY
 from app.utils import parse_cpu, parse_memory, get_pod_status_and_phase
 from datetime import datetime, timezone
 from kubernetes import watch
-import threading
-import time
+
+_watch_lock = threading.Lock()
+_active_watch = None
+
+
+def stop_pod_watch():
+    """Unblock the Kubernetes watch stream so background threads can exit."""
+    with _watch_lock:
+        if _active_watch is not None:
+            _active_watch.stop()
 
 def _sum_container_usage(metric_entry, resource):
     values = []
@@ -110,60 +122,80 @@ def get_pods_data():
         print("Error fetching pods in services:", e)
         return [], {}
 
-def watch_pod_events():
+def _run_pod_watch_stream():
+    global _active_watch
+    w = watch.Watch()
+    with _watch_lock:
+        _active_watch = w
+    print("Background watch loop running.")
+    try:
+        for event in w.stream(v1.list_pod_for_all_namespaces):
+            pod = event["object"]
+            name = pod.metadata.name
+            namespace = pod.metadata.namespace
+            event_type = event["type"]
+            phase = pod.status.phase or "Unknown"
+            now_str = datetime.now().strftime("%H:%M:%S")
+
+            severity = "info"
+            restarts = 0
+            if pod.status.container_statuses:
+                for cs in pod.status.container_statuses:
+                    restarts += cs.restart_count or 0
+                    if cs.state.waiting:
+                        if cs.state.waiting.reason in ["CrashLoopBackOff", "ImagePullBackOff", "ErrImagePull"]:
+                            severity = "critical"
+
+            if phase == "Failed":
+                severity = "critical"
+            elif phase == "Pending" or pod.metadata.deletion_timestamp:
+                severity = "warning"
+            elif severity == "info" and restarts > 0:
+                severity = "warning"
+
+            if event_type == "DELETED":
+                severity = "warning"
+                desc = f"Pod {namespace}/{name} deleted from cluster."
+            elif event_type == "ADDED":
+                desc = f"New Pod {namespace}/{name} added in phase {phase}."
+            else:
+                desc = f"Pod {namespace}/{name} state update: phase {phase}, restarts {restarts}."
+
+            event_data = {
+                "id": f"{int(time.time())}-{name}",
+                "time": now_str,
+                "severity": severity,
+                "description": desc
+            }
+            EVENT_LOG.appendleft(event_data)
+    finally:
+        with _watch_lock:
+            if _active_watch is w:
+                _active_watch = None
+
+
+async def watch_pod_events():
     while True:
         try:
-            w = watch.Watch()
-            print("Background Watch loop running in thread.")
-            for event in w.stream(v1.list_pod_for_all_namespaces):
-                pod = event["object"]
-                name = pod.metadata.name
-                namespace = pod.metadata.namespace
-                event_type = event["type"]
-                phase = pod.status.phase or "Unknown"
-                now_str = datetime.now().strftime("%H:%M:%S")
-                
-                severity = "info"
-                restarts = 0
-                if pod.status.container_statuses:
-                    for cs in pod.status.container_statuses:
-                        restarts += cs.restart_count or 0
-                        if cs.state.waiting:
-                            if cs.state.waiting.reason in ["CrashLoopBackOff", "ImagePullBackOff", "ErrImagePull"]:
-                                severity = "critical"
-                
-                if phase == "Failed":
-                    severity = "critical"
-                elif phase == "Pending" or pod.metadata.deletion_timestamp:
-                    severity = "warning"
-                elif severity == "info" and restarts > 0:
-                    severity = "warning"
-                    
-                if event_type == "DELETED":
-                    severity = "warning"
-                    desc = f"Pod {namespace}/{name} deleted from cluster."
-                elif event_type == "ADDED":
-                    desc = f"New Pod {namespace}/{name} added in phase {phase}."
-                else:
-                    desc = f"Pod {namespace}/{name} state update: phase {phase}, restarts {restarts}."
-                    
-                event_data = {
-                    "id": f"{int(time.time())}-{name}",
-                    "time": now_str,
-                    "severity": severity,
-                    "description": desc
-                }
-                EVENT_LOG.appendleft(event_data)
+            await asyncio.to_thread(_run_pod_watch_stream)
+        except asyncio.CancelledError:
+            stop_pod_watch()
+            raise
         except Exception as e:
             print(f"Error in background watcher: {e}. Retrying in 5s...")
-            time.sleep(5)
+            try:
+                await asyncio.sleep(5)
+            except asyncio.CancelledError:
+                stop_pod_watch()
+                raise
 
-def update_metrics_loop():
+
+async def update_metrics_loop():
     while True:
         try:
-            pods_data, _ = get_pods_data()
+            pods_data, _ = await asyncio.to_thread(get_pods_data)
             now_str = datetime.now().strftime("%H:%M")
-            
+
             new_point = {
                 "time": now_str,
                 "memory": {pod["name"]: pod["memory"] for pod in pods_data},
@@ -171,15 +203,14 @@ def update_metrics_loop():
                 "memoryMiB": {pod["name"]: pod["memoryMiB"] for pod in pods_data},
                 "cpuCores": {pod["name"]: pod["cpuCores"] for pod in pods_data}
             }
-            
+
             METRICS_HISTORY.append(new_point)
             if len(METRICS_HISTORY) > 10:
                 METRICS_HISTORY.pop(0)
         except Exception as e:
             print("Error updating metrics history:", e)
-            
-        time.sleep(15)
 
-def start_background_jobs():
-    threading.Thread(target=watch_pod_events, daemon=True).start()
-    threading.Thread(target=update_metrics_loop, daemon=True).start()
+        try:
+            await asyncio.sleep(15)
+        except asyncio.CancelledError:
+            raise
