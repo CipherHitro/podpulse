@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cpu-saturator2
+  labels:
+    app: stress-test
+spec:
+  containers:
+  - name: stress-container
+    image: polinux/stress-ng:latest
+    # Run 2 CPU stress workers aggressively
+    args: ["--cpu", "2", "--cpu-method", "all"]
+    resources:
+      requests:
+        cpu: "500m"
+      limits:
+        cpu: "2" # Allows it to scale up and grab up to 2 full CPU cores

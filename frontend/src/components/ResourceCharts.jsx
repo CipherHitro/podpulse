@@ -11,20 +11,20 @@ import {
 import { StatusBadge } from './status'
 
 const tooltipStyle = {
-  background: '#111522',
-  border: '1px solid rgba(255,255,255,0.12)',
+  background: '#111111',
+  border: '1px solid rgba(168,196,101,0.2)',
   borderRadius: 8,
-  color: '#e2e8f0',
+  color: '#dad7cd',
   boxShadow: '0 18px 50px rgba(0,0,0,0.38)',
 }
 
 function ChartShell({ title, subtitle, status = 'info', children }) {
   return (
-    <section className="min-h-[230px] rounded-lg border border-white/10 bg-[#1a1d27] p-4 shadow-xl shadow-black/10">
+    <section className="min-h-[230px] rounded-xl border border-[rgba(168,196,101,0.2)] bg-[#111111] p-4 transition duration-200 hover:border-[rgba(168,196,101,0.4)]">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold text-white">{title}</h3>
-          <p className="truncate text-xs text-slate-500">{subtitle}</p>
+          <p className="truncate text-xs text-[#555555]">{subtitle}</p>
         </div>
         <StatusBadge status={status} label={status} />
       </div>
@@ -36,24 +36,24 @@ function ChartShell({ title, subtitle, status = 'info', children }) {
 function baseAxes(unit = '%') {
   return (
     <>
-      <CartesianGrid stroke="rgba(148,163,184,0.12)" strokeDasharray="3 3" vertical={false} />
+      <CartesianGrid stroke="rgba(168,196,101,0.08)" strokeDasharray="3 3" vertical={false} />
       <XAxis
         dataKey="time"
-        stroke="#64748b"
-        tick={{ fill: '#94a3b8', fontSize: 11 }}
+        stroke="#555555"
+        tick={{ fill: '#555555', fontSize: 11 }}
         tickLine={false}
         axisLine={false}
         minTickGap={12}
       />
       <YAxis
-        stroke="#64748b"
-        tick={{ fill: '#94a3b8', fontSize: 11 }}
+        stroke="#555555"
+        tick={{ fill: '#555555', fontSize: 11 }}
         tickFormatter={(value) => `${value}${unit}`}
         tickLine={false}
         axisLine={false}
         width={36}
       />
-      <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: '#f8fafc' }} cursor={{ stroke: '#4488ff55' }} />
+      <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: '#A8C465' }} cursor={{ stroke: 'rgba(168,196,101,0.3)' }} />
     </>
   )
 }
@@ -95,12 +95,12 @@ export default function ResourceCharts({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={memoryData} key={`memory-${animationKey}`}>
             {baseAxes('%')}
-            <ReferenceLine y={85} stroke="#ff4444" strokeDasharray="5 5" ifOverflow="extendDomain" />
+            <ReferenceLine y={85} stroke="#D97706" strokeDasharray="4 2" ifOverflow="extendDomain" />
             <Line
               type="monotone"
               dataKey="authService"
               name="auth-service"
-              stroke="#ff4444"
+              stroke="#DC2626"
               strokeWidth={2.4}
               dot={false}
               isAnimationActive
@@ -110,7 +110,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="libraryService"
               name="library-service"
-              stroke="#ffaa00"
+              stroke="#D97706"
               strokeWidth={2.4}
               dot={false}
               isAnimationActive
@@ -120,7 +120,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="studentPortal"
               name="student-portal"
-              stroke="#4488ff"
+              stroke="#A8C465"
               strokeWidth={2.4}
               dot={false}
               isAnimationActive
@@ -134,12 +134,12 @@ export default function ResourceCharts({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={cpuData} key={`cpu-${animationKey}`}>
             {baseAxes('%')}
-            <ReferenceLine y={70} stroke="#ff4444" strokeDasharray="5 5" ifOverflow="extendDomain" />
+            <ReferenceLine y={70} stroke="#D97706" strokeDasharray="4 2" ifOverflow="extendDomain" />
             <Line
               type="monotone"
               dataKey="studentPortal"
               name="student-portal"
-              stroke="#4488ff"
+              stroke="#A8C465"
               strokeWidth={2.4}
               dot={false}
               isAnimationActive
@@ -149,7 +149,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="authService"
               name="auth-service"
-              stroke="#ff4444"
+              stroke="#D97706"
               strokeWidth={2.1}
               dot={false}
               isAnimationActive
@@ -159,7 +159,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="apiGateway"
               name="api-gateway"
-              stroke="#ffaa00"
+              stroke="#7A9E97"
               strokeWidth={2.1}
               dot={false}
               isAnimationActive
@@ -173,12 +173,12 @@ export default function ResourceCharts({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={pvcSegmentData} key={`pvc-${animationKey}`}>
             {baseAxes('s')}
-            <ReferenceLine y={1} stroke="#ff4444" strokeDasharray="5 5" ifOverflow="extendDomain" />
+            <ReferenceLine y={1} stroke="#D97706" strokeDasharray="4 2" ifOverflow="extendDomain" />
             <Line
               type="monotone"
               dataKey="latencyNormal"
               name="latency"
-              stroke="#00ff88"
+              stroke="#A8C465"
               strokeWidth={2.4}
               dot={false}
               connectNulls={false}
@@ -189,7 +189,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="latencyAlert"
               name="latency over threshold"
-              stroke="#ff4444"
+              stroke="#DC2626"
               strokeWidth={2.8}
               dot={false}
               connectNulls={false}
@@ -204,12 +204,12 @@ export default function ResourceCharts({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={networkData} key={`network-${animationKey}`}>
             {baseAxes('')}
-            <ReferenceLine y={2000} stroke="#ff4444" strokeDasharray="5 5" ifOverflow="extendDomain" />
+            <ReferenceLine y={2000} stroke="#D97706" strokeDasharray="4 2" ifOverflow="extendDomain" />
             <Line
               type="monotone"
               dataKey="requests"
               name="requests"
-              stroke="#4488ff"
+              stroke="#A8C465"
               strokeWidth={2.4}
               dot={false}
               isAnimationActive
@@ -219,7 +219,7 @@ export default function ResourceCharts({
               type="monotone"
               dataKey="errors"
               name="errors"
-              stroke="#ff4444"
+              stroke="#DC2626"
               strokeWidth={1.8}
               dot={false}
               isAnimationActive

@@ -1,0 +1,202 @@
+.react-flow {
+  background: transparent;
+}
+
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__edge-path {
+  filter: drop-shadow(0 0 5px var(--color-oasis-glow));
+}
+
+.react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--color-oasis-border);
+  border-radius: 8px;
+  background: var(--color-oasis-card);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.react-flow__controls-button {
+  border: 0;
+  border-bottom: 1px solid var(--color-oasis-border-subtle);
+  background: transparent;
+  color: var(--color-oasis-text-primary);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--color-oasis-card-hover);
+  color: var(--color-oasis-forest);
+}
+
+.react-flow__controls-button svg {
+  fill: var(--color-oasis-text-primary);
+}
+
+.react-flow__controls-button:hover svg {
+  fill: var(--color-oasis-forest);
+}
+
+.pulse-critical {
+  animation: pulse-critical 1.05s ease-in-out infinite;
+}
+
+.timeline-ping::after {
+  position: absolute;
+  inset: -8px;
+  content: '';
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.4;
+  animation: timeline-ping 1.4s ease-out infinite;
+}
+
+.pod-dot-critical {
+  animation: pod-dot-critical 1.15s ease-in-out infinite;
+}
+
+.live-dot {
+  animation: live-dot 2.5s ease-in-out infinite;
+  box-shadow: 0 0 14px rgba(151, 168, 122, 0.5);
+}
+
+.insight-card {
+  animation: card-enter 300ms ease-out both;
+}
+
+/* Scrollbars */
+* {
+  scrollbar-color: var(--color-oasis-border) var(--color-oasis-surface);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--color-oasis-surface);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-oasis-border);
+  border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-oasis-forest);
+}
+
+/* --- Animations --- */
+
+@keyframes pulse-critical {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 18px var(--color-critical-glow);
+  }
+
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 34px var(--color-critical-glow), 0 0 8px var(--color-critical);
+  }
+}
+
+@keyframes timeline-ping {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+@keyframes pod-dot-critical {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(220, 38, 38, 0);
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+/* Pulsing dot for status indicators */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* Glowing border for critical cards */
+@keyframes glow-critical {
+  0%, 100% { box-shadow: 0 0 8px var(--color-critical-glow); }
+  50% { box-shadow: 0 0 20px var(--color-critical-glow), 0 0 4px var(--color-critical); }
+}
+
+/* Card entrance animation */
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinning indicator */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes row-highlight {
+  0% {
+    background-color: var(--color-oasis-forest-dim);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.row-highlight-anim {
+  animation: row-highlight 1.5s ease-out;
+}
+
+.glow-critical-anim {
+  animation: glow-critical 2.5s ease-in-out infinite;
+}
+
+.pulse-inject {
+  animation: pulse-inject-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-inject-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.45), 0 0 8px rgba(217, 119, 6, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(217, 119, 6, 0), 0 0 18px rgba(217, 119, 6, 0.5);
+    transform: scale(1.04);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0), 0 0 8px rgba(217, 119, 6, 0.2);
+    transform: scale(1);
+  }
+}
+
