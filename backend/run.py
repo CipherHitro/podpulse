@@ -1,8 +1,17 @@
+"""Application entry point — starts the Uvicorn server."""
+
 import os
 
 import uvicorn
 
+from app.config import settings
+
 if __name__ == "__main__":
-    # reload=True spawns a parent reloader process; disable it for cleaner Ctrl+C shutdown.
+    # Allow environment variable to override reload behavior
     reload = os.getenv("PODPULSE_RELOAD", "").lower() in {"1", "true", "yes"}
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, reload=reload)
+    uvicorn.run(
+        "app.main:app",
+        host=settings.host,
+        port=settings.port,
+        reload=reload,
+    )
