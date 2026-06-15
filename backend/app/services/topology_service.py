@@ -2,6 +2,7 @@
 
 import httpx
 
+from app.config import settings
 from app.models.topology import TopologyNode, TopologyEdge, TopologyResponse
 
 # Workloads to filter out (internal Istio / envoy)
@@ -19,16 +20,13 @@ PROMETHEUS_QUERY = (
     ')'
 )
 
-PROMETHEUS_URL = "http://localhost:9090"
-
-
 class TopologyService:
     """Fetches and parses Istio telemetry from Prometheus to build a service graph."""
 
     @classmethod
     async def fetch_topology(cls) -> TopologyResponse:
         """Query Prometheus and build a topology graph from Istio request metrics."""
-        url = f"{PROMETHEUS_URL}/api/v1/query"
+        url = f"{settings.prometheus_url}/api/v1/query"
         params = {"query": PROMETHEUS_QUERY}
 
         async with httpx.AsyncClient(timeout=30.0) as client:

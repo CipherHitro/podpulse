@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     app_title: str = "PodPulse API"
     cors_allow_origins: list[str] = ["*"]
 
+    # Prometheus / Istio configuration
+    prometheus_url: str = "http://localhost:9090"
+
     # Background tasks
     metrics_loop_interval: int = 15  # seconds
     max_events: int = 100
