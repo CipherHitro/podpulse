@@ -36,7 +36,7 @@ class PodService:
 
     @classmethod
     def _fetch_pod_metrics(cls) -> dict:
-        """Fetch metrics from the metrics.k8s.io API."""
+        """Fetch metrics from the metrics.k8s.io API (if available)."""
         pod_metrics = {}
         try:
             custom_api = get_custom_objects_api()
@@ -47,8 +47,8 @@ class PodService:
                 ns = m["metadata"]["namespace"]
                 name = m["metadata"]["name"]
                 pod_metrics[(ns, name)] = m
-        except Exception as e:
-            print("Warning: Failed to fetch Kubernetes pod metrics:", e)
+        except Exception:
+            pass
 
         return pod_metrics
 

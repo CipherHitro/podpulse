@@ -4,16 +4,18 @@ from pydantic import BaseModel
 
 
 class TopologyNode(BaseModel):
-    """A service node in the topology graph."""
+    """A node in the topology graph."""
     id: str
     namespace: str
+    type: str = "deployment"  # "deployment" or "pod"
 
 
 class TopologyEdge(BaseModel):
-    """A directed edge representing service-to-service traffic."""
+    """A directed edge representing service-to-service or pod-to-service traffic."""
     source: str
     target: str
-    requests_per_sec: float
+    requests_per_sec: float = 0.0
+    relation: str = "traffic"  # "traffic" or "belongs_to"
 
 
 class TopologyResponse(BaseModel):
