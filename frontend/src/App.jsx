@@ -219,6 +219,7 @@ function RightPanel({
 export default function App() {
   const [pods, setPods] = useState([])
   const [insights, setInsights] = useState([])
+  const [topology, setTopology] = useState(null)
   const [selectedPodId, setSelectedPodId] = useState(null)
   const [spotlightInsightId, setSpotlightInsightId] = useState(null)
   const [pulsePodId, setPulsePodId] = useState(null)
@@ -242,28 +243,35 @@ export default function App() {
   const fetchData = useCallback(async () => {
     try {
       // 1. Fetch pods
-      const podsRes = await fetch(`http://localhost:8000/api/pods?include_system=${includeSystem}`)
+      const podsRes = await fetch(`http://localhost:5050/api/pods?include_system=${includeSystem}`)
       if (podsRes.ok) {
         const podsData = await podsRes.json()
         setPods(podsData)
       }
       
       // 2. Fetch events
-      const eventsRes = await fetch('http://localhost:8000/api/events')
+      const eventsRes = await fetch('http://localhost:5050/api/events')
       if (eventsRes.ok) {
         const eventsData = await eventsRes.json()
         setEventLog(eventsData)
       }
       
       // 3. Fetch insights
-      const insightsRes = await fetch('http://localhost:8000/api/insights')
+      const insightsRes = await fetch('http://localhost:5050/api/insights')
       if (insightsRes.ok) {
         const insightsData = await insightsRes.json()
         setInsights(insightsData)
       }
       
-      // 4. Fetch metrics
-      const metricsRes = await fetch('http://localhost:8000/api/metrics')
+      // 4. Fetch topology
+      const topoRes = await fetch('http://localhost:5050/api/topology')
+      if (topoRes.ok) {
+        const topoData = await topoRes.json()
+        setTopology(topoData)
+      }
+      
+      // 5. Fetch metrics
+      const metricsRes = await fetch('http://localhost:5050/api/metrics')
       if (metricsRes.ok) {
         const metricsData = await metricsRes.json()
         if (metricsData.memoryData) setMemoryData(metricsData.memoryData)
@@ -407,7 +415,7 @@ export default function App() {
     )
 
     try {
-      const res = await fetch(`http://localhost:8000/api/pods/${pod.namespace}/${pod.name}/restart`, {
+      const res = await fetch(`http://localhost:5050/api/pods/${pod.namespace}/${pod.name}/restart`, {
         method: 'POST'
       })
       if (!res.ok) {
@@ -472,6 +480,7 @@ export default function App() {
             <div className="flex-grow min-h-0">
               <DependencyGraph
                 pods={pods}
+                topology={topology}
                 selectedPodId={selectedPodId}
                 pulsePodId={pulsePodId}
                 criticalCount={criticalCount}
@@ -506,7 +515,7 @@ export default function App() {
       </main>
 
       <footer className="border-t border-[rgba(168,196,101,0.2)] bg-[#111111] px-4 py-4 text-center text-xs font-mono text-[#555555]">
-        Kubernetes API: localhost:8000
+        Kubernetes API: localhost:5050
       </footer>
 
       <PodDetailsModal
