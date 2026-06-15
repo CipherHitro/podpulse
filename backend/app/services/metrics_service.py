@@ -23,10 +23,10 @@ class MetricsService:
 
                 snapshot = MetricSnapshot(
                     time=now_str,
-                    memory={pod.name: pod.memory for pod in pods_data},
-                    cpu={pod.name: pod.cpu for pod in pods_data},
-                    memoryMiB={pod.name: pod.memoryMiB for pod in pods_data},
-                    cpuCores={pod.name: pod.cpuCores for pod in pods_data},
+                    memory={pod.name: pod.memory for pod in pods_data if pod.memory is not None},
+                    cpu={pod.name: pod.cpu for pod in pods_data if pod.cpu is not None},
+                    memoryMiB={pod.name: pod.memoryMiB for pod in pods_data if pod.memoryMiB is not None},
+                    cpuCores={pod.name: pod.cpuCores for pod in pods_data if pod.cpuCores is not None},
                 )
 
                 app_state.add_metric_snapshot(snapshot)

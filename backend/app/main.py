@@ -11,6 +11,7 @@ from app.routers.pods import router as pods_router
 from app.routers.events import router as events_router
 from app.routers.insights import router as insights_router
 from app.routers.metrics import router as metrics_router
+from app.routers.topology import router as topology_router
 from app.services.event_service import EventService
 from app.services.metrics_service import MetricsService
 
@@ -48,3 +49,4 @@ app.include_router(pods_router)
 app.include_router(events_router)
 app.include_router(insights_router)
 app.include_router(metrics_router)
+app.include_router(topology_router)

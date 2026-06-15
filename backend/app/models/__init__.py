@@ -2,6 +2,7 @@ from app.models.pod import Pod, PodMetrics, PodDetail
 from app.models.event import PodEvent
 from app.models.metric import MetricSnapshot, MetricResponse
 from app.models.insight import Insight
+from app.models.topology import TopologyNode, TopologyEdge, TopologyResponse
 
 __all__ = [
     "Pod",
@@ -11,4 +12,7 @@ __all__ = [
     "MetricSnapshot",
     "MetricResponse",
     "Insight",
+    "TopologyNode",
+    "TopologyEdge",
+    "TopologyResponse",
 ]

@@ -21,7 +21,7 @@ PodPulse provides real-time monitoring, visualization, and intelligent insights 
 │  Background tasks: pod watch + metrics collection     │
 └─────────────────────┬───────────────────────────────┘
                       │
-┌─────────────────────▼───────────────────────────────┐
+┌─────────────────  ────▼───────────────────────────────┐
 │              Kubernetes Cluster (real or mock)        │
 │  CoreV1Api · CustomObjectsApi (metrics.k8s.io)        │
 └─────────────────────────────────────────────────────┘
