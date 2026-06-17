@@ -357,3 +357,5 @@ Your friend built a **FastAPI backend** that turns your React frontend into a re
 5. **Install Python deps** → `cdque` (in backend, manually done — just `uv sync` is not enough)
 6. **Run the backend** → `uv run python run.py`
 7. **Run the frontend** → `npm run dev`
+
+***Server is running on https://localhost:5173***
